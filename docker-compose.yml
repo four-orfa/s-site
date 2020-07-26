@@ -1,0 +1,43 @@
+version: "3"
+services:
+  redmine:
+    image: redmine
+    ports:
+      - 3000:3000
+    environment:
+      REDMINE_DB_MYSQL: db
+      REDMINE_DB_PASSWORD: redmine
+    depends_on:
+      - db
+
+  db:
+    build: ./mysql/.mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: redmine
+      MYSQL_DATABASE: redmine
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ./mysql/data/:/var/lib/mysql/
+      - ./mysql/log/:/var/log/mysql/
+
+  phpmyadmin:
+    container_name: redmine_phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest         
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+
+  dokuwiki:
+    image: "docker.io/bitnami/dokuwiki:20180422-debian-10"
+    ports:
+      - "80:8080"
+      - "443:8443"
+    environment:
+      DOKUWIKI_USERNAME: admin
+      DOKUWIKI_PASSWORD: admin
+    volumes:
+      - ./dokuwiki_data:/bitnami/dokuwiki
+volumes:
+  dokuwiki_data:
+    driver: local
